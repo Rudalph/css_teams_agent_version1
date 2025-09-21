@@ -83,123 +83,123 @@
 // }
 
 
-"use client";
+// "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+// import React, { useEffect, useRef, useState } from "react";
 
-export default function SpeechInput({ vrmRef }) {
-    const [isListening, setIsListening] = useState(false);
-    const recognitionRef = useRef(null);
+// export default function SpeechInput({ vrmRef }) {
+//     const [isListening, setIsListening] = useState(false);
+//     const recognitionRef = useRef(null);
 
-    useEffect(() => {
-        if (!("webkitSpeechRecognition" in window)) {
-            alert("SpeechRecognition is not supported in this browser. Use Chrome.");
-            return;
-        }
+//     useEffect(() => {
+//         if (!("webkitSpeechRecognition" in window)) {
+//             alert("SpeechRecognition is not supported in this browser. Use Chrome.");
+//             return;
+//         }
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
+//         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+//         const recognition = new SpeechRecognition();
 
-        recognition.continuous = true;
-        recognition.interimResults = false;
-        recognition.lang = "en-US";
+//         recognition.continuous = true;
+//         recognition.interimResults = false;
+//         recognition.lang = "en-US";
 
-        recognition.onresult = (event) => {
-            const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-            console.log("Heard:", transcript);
-            handleSubmit(transcript);
+//         recognition.onresult = (event) => {
+//             const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+//             console.log("Heard:", transcript);
+//             handleSubmit(transcript);
 
-            // Check for wake word
-            if (transcript.startsWith("agent")) {
-                const question = transcript.replace("agent", "").trim();
-                console.log(question.length)
-                if (question.length > 0) {
-                    console.log("Final Question:", question);
-                    handleSubmit(question);
-                }
-            }
-        };
+//             // Check for wake word
+//             if (transcript.startsWith("agent")) {
+//                 const question = transcript.replace("agent", "").trim();
+//                 console.log(question.length)
+//                 if (question.length > 0) {
+//                     console.log("Final Question:", question);
+//                     handleSubmit(question);
+//                 }
+//             }
+//         };
 
-        recognition.onerror = (event) => {
-            console.error("Speech recognition error:", event.error);
-        };
+//         recognition.onerror = (event) => {
+//             console.error("Speech recognition error:", event.error);
+//         };
 
-        recognition.onend = () => {
-            console.log("Recognition stopped, restarting...");
-            recognition.start(); // Keep it always listening
-        };
+//         recognition.onend = () => {
+//             console.log("Recognition stopped, restarting...");
+//             recognition.start(); // Keep it always listening
+//         };
 
-        recognition.start();
-        recognitionRef.current = recognition;
-        setIsListening(true);
+//         recognition.start();
+//         recognitionRef.current = recognition;
+//         setIsListening(true);
 
-        return () => recognition.stop();
-    }, []);
+//         return () => recognition.stop();
+//     }, []);
 
-    const handleSubmit = async (question) => {
-        if (!question) return;
+//     const handleSubmit = async (question) => {
+//         if (!question) return;
 
-        try {
-            const res = await fetch("http://127.0.0.1:5000/ask", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                body: JSON.stringify({ question }),
-            });
+//         try {
+//             const res = await fetch("http://127.0.0.1:5000/ask", {
+//                 method: "POST",
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                     "Accept": "application/json",
+//                 },
+//                 body: JSON.stringify({ question }),
+//             });
 
-            const data = await res.json();
-            const responseText = data.answer;
-            handleSpeak(responseText);
-        } catch (err) {
-            console.error("Error talking to Flask:", err);
-            handleSpeak("Sorry, I couldn’t connect to the server.");
-        }
-    };
+//             const data = await res.json();
+//             const responseText = data.answer;
+//             handleSpeak(responseText);
+//         } catch (err) {
+//             console.error("Error talking to Flask:", err);
+//             handleSpeak("Sorry, I couldn’t connect to the server.");
+//         }
+//     };
 
-    const handleSpeak = (message) => {
-        if (!vrmRef.current) return;
-        const vrm = vrmRef.current;
+//     const handleSpeak = (message) => {
+//         if (!vrmRef.current) return;
+//         const vrm = vrmRef.current;
 
-        const utterance = new SpeechSynthesisUtterance(message);
-        utterance.rate = 1;
-        utterance.pitch = 1;
+//         const utterance = new SpeechSynthesisUtterance(message);
+//         utterance.rate = 1;
+//         utterance.pitch = 1;
 
-        // Select female voice
-        const voices = window.speechSynthesis.getVoices();
-        const femaleVoices = voices.filter(voice =>
-            voice.name.toLowerCase().includes("zira") || 
-            voice.name.toLowerCase().includes("samantha")
-        );
-        if (femaleVoices.length > 0) utterance.voice = femaleVoices[0];
+//         // Select female voice
+//         const voices = window.speechSynthesis.getVoices();
+//         const femaleVoices = voices.filter(voice =>
+//             voice.name.toLowerCase().includes("zira") || 
+//             voice.name.toLowerCase().includes("samantha")
+//         );
+//         if (femaleVoices.length > 0) utterance.voice = femaleVoices[0];
 
-        utterance.onstart = () => {
-            const visemes = ["A", "I", "U", "E", "O"];
-            const interval = setInterval(() => {
-                if (!vrm) return clearInterval(interval);
-                const viseme = visemes[Math.floor(Math.random() * visemes.length)];
-                visemes.forEach(v => vrm.blendShapeProxy.setValue(v, 0));
-                vrm.blendShapeProxy.setValue(viseme, 1);
-                vrm.blendShapeProxy.update();
-            }, 120);
+//         utterance.onstart = () => {
+//             const visemes = ["A", "I", "U", "E", "O"];
+//             const interval = setInterval(() => {
+//                 if (!vrm) return clearInterval(interval);
+//                 const viseme = visemes[Math.floor(Math.random() * visemes.length)];
+//                 visemes.forEach(v => vrm.blendShapeProxy.setValue(v, 0));
+//                 vrm.blendShapeProxy.setValue(viseme, 1);
+//                 vrm.blendShapeProxy.update();
+//             }, 120);
 
-            utterance.onend = () => {
-                visemes.forEach(v => vrm.blendShapeProxy.setValue(v, 0));
-                vrm.blendShapeProxy.update();
-                clearInterval(interval);
-            };
-        };
+//             utterance.onend = () => {
+//                 visemes.forEach(v => vrm.blendShapeProxy.setValue(v, 0));
+//                 vrm.blendShapeProxy.update();
+//                 clearInterval(interval);
+//             };
+//         };
 
-        speechSynthesis.speak(utterance);
-    };
+//         speechSynthesis.speak(utterance);
+//     };
 
-    return (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <p>🎤 Listening for "Hey Kiyana"... ({isListening ? "Active" : "Inactive"})</p>
-        </div>
-    );
-}
+//     return (
+//         <div style={{ textAlign: "center", marginTop: "20px" }}>
+//             <p>🎤 Listening for "Hey Kiyana"... ({isListening ? "Active" : "Inactive"})</p>
+//         </div>
+//     );
+// }
 
 // "use client";
 
